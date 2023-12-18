@@ -1,0 +1,7 @@
+""""""
+
+HDFS_HTTP_HOST = "localhost"
+HDFS_HTTP_PORT = 9870
+
+HIVE_THRIFT_HOST = "localhost"
+HIVE_THRIFT_PORT = 9088
