@@ -8,17 +8,6 @@ from hdfs import InsecureClient
 from pyspark.sql import SparkSession
 
 
-class Connector:
-    """
-    """
-
-    def __init__(self) -> None:
-        pass
-
-    def connect():
-        pass
-
-
 class HadoopDistributedFileSystem:
     """
     """
@@ -45,13 +34,10 @@ class HadoopDistributedFileSystem:
             self,
             data: Any,
             hdfs_path: str,
-            log: bool = False,
             **write_kwargs
     ) -> None:
         with self.client.write(hdfs_path, **write_kwargs) as hdfs_file:
             hdfs_file.write(data)
-
-        # TODO implement logging
 
 
 class Hive:
