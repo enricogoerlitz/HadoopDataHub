@@ -73,10 +73,28 @@ ERP System with master data and transactional data. No Data deletion.
     - address
     - change_field (changing)
 
-2. **dbo.employee** Employee masterdata.
+2. **dbo.department** Department masterdata.
 
     - id (unique)
     - client_id
+    - name (changing)
+    - change_field (changing)
+
+3. **dbo.costcenter** Costcenter masterdata.
+
+    - id (unique)
+    - client_id
+    - department_id
+    - buKr
+    - costcenter_short
+    - name
+    - change_field (changing)
+
+4. **dbo.employee** Employee masterdata.
+
+    - id (unique)
+    - client_id
+    - costcenter_id
     - firstname
     - lastname
     - birthdate
@@ -84,20 +102,6 @@ ERP System with master data and transactional data. No Data deletion.
     - leave_date (changing)
     - salary
     - change_field (changing)
-
-3. **dbo.department** Department masterdata.
-
-    - id (unique)
-    - client_id
-    - name (changing)
-    - change_field (changing)
-
-4. **dbo.costcenter** Costcenter masterdata.
-
-    - id (unique)
-    - kst
-    - client_id
-    - name (changing)
 
 5. **dbo.paytype** Paymenttype
 
@@ -108,6 +112,7 @@ ERP System with master data and transactional data. No Data deletion.
 
     - id
     - transaction_date
+    - employee_id
     - client_id
     - costcenter_id
     - pay_type_id
@@ -174,6 +179,8 @@ ERP System with master data and transactional data. No Data deletion.
 ECM System with highly changing data structures. A lot data deletion.
 
 1. **tbl**
+
+- auch Spalten hinzufügen und entfernen einfügen!
 
 ### HR-System - atoss [Not in dev]
 

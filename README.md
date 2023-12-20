@@ -1,5 +1,9 @@
 # HadoopDataHub Transformation Tool
 
+## Technical Requirements
+
+- Python < 3.12 & > 3.8 (recomended: 3.11.x)
+
 
 ## Transformation Logic
 
