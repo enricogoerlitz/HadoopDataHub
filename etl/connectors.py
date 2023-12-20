@@ -1,13 +1,14 @@
 """
 """
 import uuid
+import pandas as pd
 
 from typing import Any
 
 from hdfs import InsecureClient
 from pyspark.sql import SparkSession
 
-from enums import HdfsFileType
+from enums import eHdfsFileType
 from etl.datamodels import HostDataClass, TableDataClass
 
 
@@ -90,6 +91,10 @@ class Hive:
     def get_columns(self, table: TableDataClass) -> list:
         raise NotImplementedError()
 
+    def read_table(table: TableDataClass) -> pd.DataFrame:
+        """Reads a table and returns a pandas dataframe"""
+        raise NotImplementedError()
+
     def create_spark_session(self, session_name: str = None) -> SparkSession:
         """"""
         if not session_name:
@@ -104,12 +109,12 @@ class Hive:
             self,
             df: Any,
             table: TableDataClass,
-            filetype: HdfsFileType
+            filetype: eHdfsFileType
             ) -> None:
         """"""
         pass
 
-    def update_external_table(self, table_name: str) -> None:
+    def update_external_table(self, table_name: TableDataClass) -> None:
         """
         Updates an existing external table.
         Drops the existing and creates a new external table
@@ -118,11 +123,11 @@ class Hive:
         self.delete_external_table("")
         self.create_external_table("")
 
-    def drop_external_table(self, table_name: str) -> None:
+    def delete_external_table(self, table_name: TableDataClass) -> None:
         """"""
         pass
 
-    def _get_drop_table_statement(self, table_name) -> str:
+    def _get_drop_table_statement(self, table_name: TableDataClass) -> str:
         """"""
         return f"DROP TABLE {table_name}"
 

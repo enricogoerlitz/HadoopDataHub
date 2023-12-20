@@ -2,6 +2,6 @@
 from enum import Enum
 
 
-class HdfsFileType(Enum):
+class eHdfsFileType(Enum):
     CSV = "csv"
     PARQUET = "parquet"

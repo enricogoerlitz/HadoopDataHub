@@ -59,40 +59,60 @@ This is a dataset, where the datasources get theire data. In The Datasources thi
 
 ## Data and Datasources
 
-### HR-System - atoss
+### ERP-System - datev
 
-System for managing the company employees with multiple clients.
+**Description** <br>
 
-1. **dbo.employee** Employee masterdata.
+ERP System with master data and transactional data. No Data deletion.
+
+
+1. **dbo.client** Clients / Companies masterdata.
 
     - id (unique)
-    - client_id (changing, random client_id)
+    - name
+    - address
+    - change_field (changing)
+
+2. **dbo.employee** Employee masterdata.
+
+    - id (unique)
+    - client_id
     - firstname
     - lastname
     - birthdate
     - entry_date
-    - leave_date (changing, only once)
-    - salary (changing, random number)
+    - leave_date (changing)
+    - salary
+    - change_field (changing)
 
-2. **dbo.department** Department masterdata.
+3. **dbo.department** Department masterdata.
 
     - id (unique)
     - client_id
     - name (changing)
+    - change_field (changing)
 
-3. **dbo.costcenter** Costcenter masterdata.
+4. **dbo.costcenter** Costcenter masterdata.
 
     - id (unique)
     - kst
     - client_id
     - name (changing)
 
-4. **dbo.client** Clients / Companies masterdata.
+5. **dbo.paytype** Paymenttype
 
     - id (unique)
-    - name (changing)
-    - address (all musterstraße 7, 13663 Berlin)
+    - name ["AG-Anteil", "Lohnsteuer", "Soli-Zuschlag", "Krankenk.", "Pflegevers.", "Arbeitslosenvers.", "Rentenvers."]
 
+6. **dbo.employee_pay** Employee payment transaction per month, one row per pay_type!
+
+    - id
+    - transaction_date
+    - client_id
+    - costcenter_id
+    - pay_type_id
+    - amount
+    - [col1 - col100, for a very wide table, with 50 columns of number and 50 columns of text(50) values.]
 
 ### Projectmanagement System - ProjectConsultingTool
 
@@ -140,25 +160,35 @@ System for managing the company employees with multiple clients.
 
 8. **dbo.projecttime** projecttimes by user, project and task
 
-
+    - 
     - [col1 - col100, for a very wide table, with 50 columns of number and 50 columns of text(50) values.]
     - creation_datetime
     - update_datetime
 
 9. **mdm.employee** masterdata
 
-### ERP-System - datev
+### ECM-System - enaio
+
+**Description** <br>
+
+ECM System with highly changing data structures. A lot data deletion.
+
+1. **tbl**
+
+### HR-System - atoss [Not in dev]
+
+System for managing the company employees with multiple clients.
 
 1. **dbo.employee** Employee masterdata.
 
     - id (unique)
-    - client_id (changing)
+    - client_id (changing, random client_id)
     - firstname
     - lastname
     - birthdate
     - entry_date
-    - leave_date (changing)
-    - salary (changing)
+    - leave_date (changing, only once)
+    - salary (changing, random number)
 
 2. **dbo.department** Department masterdata.
 
@@ -178,18 +208,3 @@ System for managing the company employees with multiple clients.
     - id (unique)
     - name (changing)
     - address (all musterstraße 7, 13663 Berlin)
-
-5. **dbo.pay_type** Paymenttype
-
-    - id (unique)
-    - name ["AG-Anteil", "Lohnsteuer", "Soli-Zuschlag", "Krankenk.", "Pflegevers.", "Arbeitslosenvers.", "Rentenvers."]
-
-6. **dbo.employee_pay** Employee payment transaction per month, one row per pay_type!
-
-    - id
-    - transaction_date
-    - client_id
-    - costcenter_id
-    - pay_type_id
-    - amount
-    - [col1 - col100, for a very wide table, with 50 columns of number and 50 columns of text(50) values.]
