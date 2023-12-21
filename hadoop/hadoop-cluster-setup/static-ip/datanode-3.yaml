@@ -1,0 +1,16 @@
+# in /etc/netplan/
+# sudo netplan apply
+# sudo reboot apply
+
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp0s1(NAME über ip a):
+      addresses:
+        - 192.168.64.113/24  # new static ip addres
+      nameservers:
+        addresses: [1.1.1.1, 1.0.0.1]
+      routes:
+        - to: default
+          via: 192.168.0.1  # standard local network gateway (e.g. 192.168.0.1, 192.168.1.1 -> netstat -nr | grep default (Macbook))

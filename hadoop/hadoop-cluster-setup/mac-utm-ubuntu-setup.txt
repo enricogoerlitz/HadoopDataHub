@@ -1,0 +1,70 @@
+-- setup on mac
+1. download ARM .ico (https://ubuntu.com/download/server/arm)
+2. create in UTM and use this as image
+3. sudo apt update && sudo apt upgrade
+4. sudo apt install ubuntu-desktop
+5. sudo reboot now
+6. static ip -> /etc/netplan (https://www.youtube.com/watch?v=fayx4jWqyWk&list=PLyyJuDk2WoflaA3gjSyvA0nUykioqEobz&index=3&t=970s&ab_channel=KeepItTechie)
+        - sudo netplan apply
+        - sudo reboot now
+7. add domain name to mac in /etc/hosts -> server_static_ip master.hadoop.local (domain name)
+8. install vs code (ARM!) on ubuntu
+
+
+sudo (sustainable user + do (machen)) => Adminrechte
+sudo ip addr show => IP config
+
+cd (change directory)
+cd ~ => HomeDir
+
+pwd => print working directory
+
+ping {ip}
+
+touch (Datei erstellen)
+mkdir (Ordner erstellen)
+
+cat (Datei lesen)
+head -n {anzahl zeilen} => List die ersten n-zeilen
+tail -n {anzahl zeilen} => List die letzten n-zeilen
+less => list ersten 100 Zeilen und mit Enter kann man mehr lesen, mit pfeil nach oben wieder scrollen
+        => MIT "q" beenden!
+
+which {prgrammname (zB cat)} => gibt den Pfad aus, wo sich das Programm befindent
+
+echo {name, zB $PATH} => $PATH -> $ steht für Varibale und echo $PATH gibt die variable PATH aus!
+
+PATH-Variable anpassen:
+export PATH=$PATH:~/bin
+        PATH Variabble "=" $PATH + /bin im userverzeichnis
+                                        und in /bin sind dann die ausführbaren dateien
+        + export PATH=$PATH:~/bin IN .profile und .bashrc ganz unten hinzufügen, damit das hinzufügen permanent ist!
+
+#!/bin/bash -> für bash skript
+
+nano
+nano {/home/Documents/textdatei.txt}
+
+mv {alter-fullpath / alter name} {neuer name / neuer full-´path} (umbenennen)
+
+-- STATIC IP AND NAME
+static-ip: https://www.youtube.com/watch?v=fayx4jWqyWk&list=PLyyJuDk2WoflaA3gjSyvA0nUykioqEobz&index=3&t=970s&ab_channel=KeepItTechie
+static name: https://www.youtube.com/watch?v=RQEB9J9bSG0&list=PLyyJuDk2WoflaA3gjSyvA0nUykioqEobz&index=3&t=170s&ab_channel=EricOMeehan
+sudo nano /etc/hosts => 192.168.64.101 master.hadoop.local
+
+-- ssh
+sudo apt install openssh-server
+systemctl status ssh
+ssh-port: 22
+
+ssh enricogoerlitz@192.168.64.1XX
+
+-- os x64, x86?
+uname -a
+
+-- setup linux RDP
+sudo apt install xrdp
+sudo systemctl enable xrdp
+sudo ufw allow from any to any port 3389 proto tcp
+sudo reboot now
+-> normal RDP Connection

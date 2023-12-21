@@ -1,0 +1,8 @@
+------------------------------------------
+5x Deamens
+
+- NAMENODE (MASTER)
+- DATANODE (SLAVES / WORKERS)
+- RESSOURCEMANAGER
+- NODEMANGER
+- SECONDARYNAMENODE

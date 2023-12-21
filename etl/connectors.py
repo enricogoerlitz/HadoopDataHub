@@ -129,7 +129,7 @@ class Hive:
 
     def _get_drop_table_statement(self, table_name: TableDataClass) -> str:
         """"""
-        return f"DROP TABLE {table_name}"
+        return f"DROP TABLE IF EXISTS {table_name}"
 
     def _get_create_external_table_statement(
             self,

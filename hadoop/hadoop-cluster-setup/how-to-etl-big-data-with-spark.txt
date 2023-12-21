@@ -1,0 +1,20 @@
+ETL with Spark:
+
+1. Small Dataset
+    - query the data with Spark
+    - transform the data with Spark
+    - load the data with Spark
+
+2. big dataset
+
+    2.1
+        - read chucks of the data from the datasource with pandas (for-loop)
+        - convert pandas-df to Spark df: df_spark=spark.createDataFrame(df_pandas)
+        - transform the data with Spark
+        - load the data with Spark
+    
+    2.2
+        - read the data and save them temporary into a csv or paquet-file with pandas
+        - read the data from the file into Spark DF
+        - transform the data with Spark
+        - load the data with Spark

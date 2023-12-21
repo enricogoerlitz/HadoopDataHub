@@ -1,0 +1,33 @@
+
+Befehl	Beschreibung
+ls	Zeigt den Inhalt des aktuellen Verzeichnisses an
+cd <Verzeichnispfad>	Wechselt in ein Verzeichnis 
+cd ~	Wechselt in das Home-Verzeichnis
+cd ..	Wechselt in das übergeordnete Verzeichnis
+pwd	Zeigt das Verzeichnis an, in dem man sich befindet
+clear	Leert den Inhalt des Terminals
+touch <Dateipfad>	Legt eine Datei an
+cat <Dateipfad>	Zeigt u.a. den Inhalt einer Datei im Terminal an
+head <Dateipfad>	Zeigt die ersten 10 Zeilen einer Datei im Terminal an
+head -n <Zahl> <Dateipfad>	Zeigt die ersten Zeilen einer Datei im Terminal an
+tail	Zeigt die letzten 10 Zeilen einer Datei im Terminal an
+tail -n <Zahl> <Dateipfad>	Zeigt die letzten Zeilen einer Datei im Terminal an
+more <Dateipfad>	Scrollt (nur!) von oben nach unten durch eine Datei, beenden mit STRG + C
+less <Dateipfad>	Scrollt durch eine Datei, beenden mit Q
+<Befehl> --help	Zeigt den Hilfe-Text zu einem Befehl an
+man <Befehl>	Zeigt ausführliche Anleitung zu einem Befehl an
+which <Programm>	Zeigt den Pfad eines Programms an
+echo <Ausdruck>	Zeigt einen Ausdruck im Terminal an
+echo $PATH	Zeigt den Inhalt der Umgebungsvariablen an
+date	Zeigt aktuelle Systemzeit an
+export PATH=$PATH:~/<Dateipfad>	Fügt einen Pfad zur Umgebungsvariablen hinzu
+sudo apt install openssh-server	Installiert den SSH-Server nach
+ssh <Benutzername>.local	Verbindet mit dem SSH-Server
+
+
+
+NÜTZLICHE TASTEN:
+Befehl	Beschreibung
+Tab	Wendet Autovervollständigung an
+Pfeiltaste nach oben/unten	Navigiert zwischen zuvor ausgeführten Befehlen
+
