@@ -7,8 +7,9 @@ from typing import Any
 
 from hdfs import InsecureClient
 from pyspark.sql import SparkSession
+from pyhive import hive
 
-from enums import eHdfsFileType
+from etl.enums import eHdfsFileType
 from etl.datamodels import HostDataClass, TableDataClass
 
 
@@ -67,10 +68,13 @@ class Hive:
     """
     def __init__(
             self,
-            host: HostDataClass
+            host: HostDataClass,
+            thrift_port: int = None
     ) -> None:
         self._host = host
-        self._thrift = f"thrift://{host.hostname}"
+        self._thrift = f"thrift://{host.host}:{thrift_port}" \
+                       if thrift_port is not None \
+                       else None
 
     @property
     def host(self) -> HostDataClass:
@@ -80,28 +84,81 @@ class Hive:
     def thrift(self) -> str:
         return self._thrift
 
-    @property
-    def databases(self) -> list:
-        raise NotImplementedError()
+    def get_databases(self) -> list:
+        """"""
+        query = "SHOW DATABASES"
+        return self.execute_with_list_result(query)
 
-    @property
-    def tables(self) -> list:
-        raise NotImplementedError()
+    def get_tables(self, database: str = "default") -> list:
+        """"""
+        query = f"SHOW TABLES IN {database}"
+        return self.execute_with_list_result(query)
 
-    def get_columns(self, table: TableDataClass) -> list:
-        raise NotImplementedError()
+    def describe_table(self, table: TableDataClass) -> pd.DataFrame:
+        """"""
+        query = f"DESCRIBE {table.database}.{table.table_name}"
+        return self.execute_with_df_result(query)
 
-    def read_table(table: TableDataClass) -> pd.DataFrame:
+    def read_table(
+            self,
+            table: TableDataClass,
+            columns: list[str] = None,
+            limit: int = None
+            ) -> pd.DataFrame:
         """Reads a table and returns a pandas dataframe"""
-        raise NotImplementedError()
+        query = f"SELECT * FROM {table.database}.{table.table_name}"
+        if columns is not None:
+            columns_query_str = ",".join(columns)
+            query = query.replace("*", columns_query_str)
+        if limit is not None:
+            query += f" LIMIT {limit}"
+
+        return self.execute_with_df_result(query)
+
+    def execute_hive_query(self, query: str) -> tuple[list[tuple], list]:
+        """"""
+        connection = self._get_connection()
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute(query)
+            result = cursor.fetchall()
+            column_names = [desc[0] for desc in cursor.description]
+            return result, column_names
+        except Exception as e:
+            raise e
+        finally:
+            cursor.close()
+            connection.close()
+
+    def execute_with_df_result(self, query: str) -> pd.DataFrame:
+        """"""
+        result = self.execute_hive_query(query)
+        return self.parse_queryresult_to_df(result)
+
+    def execute_with_list_result(self, query: str) -> list:
+        """"""
+        result = self.execute_hive_query(query)[0]
+        return [item[0] for item in result]
+
+    def parse_queryresult_to_df(
+            self,
+            queryresult: tuple[list[tuple], list]
+            ) -> pd.DataFrame:
+        """"""
+        result, columns = queryresult
+        return pd.DataFrame(result, columns=columns)
 
     def create_spark_session(self, session_name: str = None) -> SparkSession:
         """"""
-        if not session_name:
+        if self.thrift is None:
+            err = "thrift port is None. Please add the thrift port of the Hive server"  # noqa
+            raise ValueError(err)
+        if session_name is None:
             session_name = str(uuid.uuid4())
         return SparkSession.builder \
             .appName(session_name) \
-            .config("hive.metastore.uris", self._thrift) \
+            .config("hive.metastore.uris", self.thrift) \
             .enableHiveSupport() \
             .getOrCreate()
 
@@ -122,6 +179,10 @@ class Hive:
         # WORK WITH CURSOR AND AT ERROR -> cursor.rollback()
         self.delete_external_table("")
         self.create_external_table("")
+
+    def _get_connection(self) -> hive.Connection:
+        """"""
+        return hive.Connection(host=self.host.host, port=self.host.port)
 
     def delete_external_table(self, table_name: TableDataClass) -> None:
         """"""
