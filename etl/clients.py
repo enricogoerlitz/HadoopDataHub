@@ -13,7 +13,7 @@ from etl.enums import eHdfsFileType
 from etl.datamodels import HostDataClass, TableDataClass
 
 
-class HadoopDistributedFileSystem:
+class HDFileSystemClient:
     """
     """
     def __init__(
@@ -63,7 +63,7 @@ class HadoopDistributedFileSystem:
         return str(self)
 
 
-class Hive:
+class HiveClient:
     """
     """
     def __init__(
@@ -83,6 +83,10 @@ class Hive:
     @property
     def thrift(self) -> str:
         return self._thrift
+
+    def get_connection(self) -> hive.Connection:
+        """"""
+        return hive.Connection(host=self.host.host, port=self.host.port)
 
     def get_databases(self) -> list:
         """"""
@@ -115,9 +119,25 @@ class Hive:
 
         return self.execute_with_df_result(query)
 
-    def execute_hive_query(self, query: str) -> tuple[list[tuple], list]:
+    def execute_hive_query(self, query: str) -> None:
         """"""
-        connection = self._get_connection()
+        connection = self.get_connection()
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute(query)
+        except Exception as e:
+            raise e
+        finally:
+            cursor.close()
+            connection.close()
+
+    def execute_hive_query_with_result(
+            self,
+            query: str
+            ) -> tuple[list[tuple], list]:
+        """"""
+        connection = self.get_connection()
         cursor = connection.cursor()
 
         try:
@@ -133,18 +153,18 @@ class Hive:
 
     def execute_with_df_result(self, query: str) -> pd.DataFrame:
         """"""
-        result = self.execute_hive_query(query)
+        result = self.execute_hive_query_with_result(query)
         return self.parse_queryresult_to_df(result)
 
     def execute_with_list_result(self, query: str) -> list:
         """"""
-        result = self.execute_hive_query(query)[0]
+        result = self.execute_hive_query_with_result(query)[0]
         return [item[0] for item in result]
 
     def parse_queryresult_to_df(
             self,
             queryresult: tuple[list[tuple], list]
-            ) -> pd.DataFrame:
+    ) -> pd.DataFrame:
         """"""
         result, columns = queryresult
         return pd.DataFrame(result, columns=columns)
@@ -164,43 +184,95 @@ class Hive:
 
     def create_external_table(
             self,
-            df: Any,
+            df: pd.DataFrame,
             table: TableDataClass,
-            filetype: eHdfsFileType
+            filetype: eHdfsFileType,
+            location: str,
+            csv_delimiter: str = "|"
             ) -> None:
         """"""
-        pass
-
-    def update_external_table(self, table_name: TableDataClass) -> None:
-        """
-        Updates an existing external table.
-        Drops the existing and creates a new external table
-        """
         # WORK WITH CURSOR AND AT ERROR -> cursor.rollback()
+        create_stmt = self._get_create_external_table_stmt(
+            df=df,
+            table=table,
+            filetype=filetype,
+            location=location,
+            csv_delimiter=csv_delimiter
+        )
+        print(create_stmt)
+        # drop table with cursor
+        # create table with cursor
+        # on error -> cursor.rollback() ...
+
         self.delete_external_table("")
         self.create_external_table("")
 
-    def _get_connection(self) -> hive.Connection:
-        """"""
-        return hive.Connection(host=self.host.host, port=self.host.port)
-
-    def delete_external_table(self, table_name: TableDataClass) -> None:
-        """"""
-        pass
-
-    def _get_drop_table_statement(self, table_name: TableDataClass) -> str:
-        """"""
-        return f"DROP TABLE IF EXISTS {table_name}"
-
-    def _get_create_external_table_statement(
+    def delete_external_table(
             self,
-            df,
-            table_name: str
-            ) -> str:
+            table: TableDataClass
+    ) -> tuple[list[str], list]:
+        """"""
+        query = f"DROP TABLE IF EXISTS {table.database}.{table.table_name}"
+        return self.execute_hive_query(query)
+
+    def _get_create_external_table_stmt(
+            self,
+            df: pd.DataFrame,
+            table: TableDataClass,
+            filetype: eHdfsFileType,
+            location: str,
+            csv_delimiter: str = "|"
+    ) -> str:
         """
-        Generates the CREATE EXTERNAL TABLE statement for hive.
+        Generates the CREATE EXTERNAL TABLE stmt for hive.
         """
-        pass
+        def get_hive_column_dtype(column: str, pd_dtype: str) -> str:
+            match pd_dtype:
+                case "int64":
+                    return f"`{column}` BIGINT"
+                case "float64":
+                    return f"`{column}` DOUBLE"
+                case "bool":
+                    return f"`{column}` BOOLEAN"
+                case "datetime64[ns]":
+                    return f"`{column}` TIMESTAMP"
+                case _:
+                    return f"`{column}` STRING"
+        columns = [get_hive_column_dtype(column_name, dtype)
+                   for column_name, dtype in df.dtypes.items()]
+
+        hive_create_external_stmt = (
+            f"CREATE EXTERNAL TABLE IF NOT EXISTS {table.database}.{table.table_name} (\n"  # noqa
+            f"    {', '.join(columns)}\n"
+            ")\n"
+            f"{self._get_hive_stored_as_string(filetype, csv_delimiter)}"
+            f"LOCATION '{location}'"
+        )
+
+        return hive_create_external_stmt
+
+    def _get_drop_externaltable_stmt(
+            self,
+            table: TableDataClass
+    ) -> str:
+        """"""
+        query = f"DROP TABLE IF EXISTS {table.database}.{table.table_name}"
+        return query
+
+    def _get_hive_stored_as_string(
+            self,
+            filetype: eHdfsFileType,
+            csv_delimiter: str
+    ) -> str:
+        """"""
+        if filetype == eHdfsFileType.PARQUET:
+            return "STORED AS PARQUET\n"
+
+        return (
+                "ROW FORMAT DELIMITED\n"
+                f"FIELDS TERMINATED BY '{csv_delimiter}'\n"
+                f"STORED AS TEXTFILE\n"
+            )
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(\n" + \
