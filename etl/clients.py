@@ -197,7 +197,7 @@ class HiveClient:
             table=table,
             filetype=filetype,
             location=location,
-            csv_delimiter=csv_delimiter
+            csv_delimiter=csv_delimiter,
         )
         print(create_stmt)
         # drop table with cursor
@@ -235,7 +235,7 @@ class HiveClient:
                 case "bool":
                     return f"`{column}` BOOLEAN"
                 case "datetime64[ns]":
-                    return f"`{column}` TIMESTAMP"
+                    return f"`{column}` TIMESTAMP"  # TODO: Test; Change to STRING and cast in VIEW  # noqa
                 case _:
                     return f"`{column}` STRING"
         columns = [get_hive_column_dtype(column_name, dtype)
