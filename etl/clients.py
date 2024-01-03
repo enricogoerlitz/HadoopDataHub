@@ -51,6 +51,14 @@ class HDFileSystemClient:
         with self.client.write(hdfs_path, **write_kwargs) as hdfs_file:
             hdfs_file.write(data)
 
+    def exists(self, path: str) -> bool:
+        """"""
+        try:
+            _ = self.client.status(path)
+            return True
+        except Exception:
+            return False
+
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(\n" + \
                 f"\thost={self.host.hostname},\n" + \
@@ -107,17 +115,42 @@ class HiveClient:
             self,
             table: TableDataClass,
             columns: list[str] = None,
-            limit: int = None
+            limit: int = None,
+            skiprows: int = None
             ) -> pd.DataFrame:
         """Reads a table and returns a pandas dataframe"""
         query = f"SELECT * FROM {table.database}.{table.table_name}"
+
         if columns is not None:
             columns_query_str = ",".join(columns)
             query = query.replace("*", columns_query_str)
+
         if limit is not None:
             query += f" LIMIT {limit}"
 
+        if skiprows is not None:
+            query += f" OFFSET {skiprows}"
+
         return self.execute_with_df_result(query)
+
+    def read_table_iterbatches(
+            self,
+            table: TableDataClass,
+            columns: list[str] = None,
+            batchsize: int = 10_000
+    ) -> None:
+        skiprows = batchsize
+        while True:
+            df_table = self.read_table(
+                table=table,
+                columns=columns,
+                limit=batchsize,
+                skiprows=skiprows
+            )
+            if df_table.shape[0] == 0:
+                break
+            yield df_table
+            skiprows += batchsize
 
     def execute_hive_query(self, query: str) -> None:
         """"""
@@ -191,7 +224,8 @@ class HiveClient:
             csv_delimiter: str = "|"
             ) -> None:
         """"""
-        # WORK WITH CURSOR AND AT ERROR -> cursor.rollback()
+        create_db_stmt = self._get_create_database_stmt(db_name=table.database)
+        drop_stmt = self._get_drop_externaltable_stmt(table=table)
         create_stmt = self._get_create_external_table_stmt(
             df=df,
             table=table,
@@ -199,21 +233,34 @@ class HiveClient:
             location=location,
             csv_delimiter=csv_delimiter,
         )
-        print(create_stmt)
-        # drop table with cursor
-        # create table with cursor
-        # on error -> cursor.rollback() ...
 
-        self.delete_external_table("")
-        self.create_external_table("")
+        connection = self.get_connection()
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute(create_db_stmt)
+            cursor.execute(drop_stmt)
+            cursor.execute(create_stmt)
+        except Exception as e:
+            raise e
+        finally:
+            cursor.close()
+            connection.close()
 
     def delete_external_table(
             self,
             table: TableDataClass
     ) -> tuple[list[str], list]:
         """"""
-        query = f"DROP TABLE IF EXISTS {table.database}.{table.table_name}"
+        query = self._get_drop_externaltable_stmt(table=table)
         return self.execute_hive_query(query)
+
+    def _get_create_database_stmt(
+            self,
+            db_name: str
+    ) -> str:
+        query = f"CREATE DATABASE IF NOT EXISTS {db_name}"
+        return query
 
     def _get_create_external_table_stmt(
             self,
@@ -236,16 +283,19 @@ class HiveClient:
                     return f"`{column}` BOOLEAN"
                 case "datetime64[ns]":
                     return f"`{column}` TIMESTAMP"  # TODO: Test; Change to STRING and cast in VIEW  # noqa
+                case "<M8[ns]":
+                    return f"`{column}` TIMESTAMP"  # TODO: Test; Change to STRING and cast in VIEW  # noqa
                 case _:
                     return f"`{column}` STRING"
         columns = [get_hive_column_dtype(column_name, dtype)
                    for column_name, dtype in df.dtypes.items()]
 
+        print(table)
         hive_create_external_stmt = (
             f"CREATE EXTERNAL TABLE IF NOT EXISTS {table.database}.{table.table_name} (\n"  # noqa
             f"    {', '.join(columns)}\n"
             ")\n"
-            f"{self._get_hive_stored_as_string(filetype, csv_delimiter)}"
+            f"{self._get_hive_stored_as(filetype, csv_delimiter)}"
             f"LOCATION '{location}'"
         )
 
@@ -259,7 +309,7 @@ class HiveClient:
         query = f"DROP TABLE IF EXISTS {table.database}.{table.table_name}"
         return query
 
-    def _get_hive_stored_as_string(
+    def _get_hive_stored_as(
             self,
             filetype: eHdfsFileType,
             csv_delimiter: str

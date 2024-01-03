@@ -22,7 +22,7 @@
 
 3. ForEach Batch-File from /hive/tmp/*
     1. identify updated rows
-        - Filter: JOIN WHERE STG_COL1..X <> PSA_COL1..X
+        - Filter: JOIN ON PK, WHERE STG_COL1..X <> PSA_COL1..X
             - ROW_IS_CURRENT = 0
             - ROW_VALID_TO = TODAY()
             

@@ -19,3 +19,4 @@ class TableDataClass:
     table_name: str
     database: str
     schema: str = None
+    pk: list[str] = None
