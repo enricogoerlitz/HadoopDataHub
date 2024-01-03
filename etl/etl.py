@@ -3,7 +3,6 @@ import uuid
 import pandas as pd
 
 from abc import ABC, abstractmethod
-from datetime import datetime
 from etl.connectors import IConnector
 from etl.clients import HDFileSystemClient, HiveClient
 from etl.datamodels import TableDataClass
@@ -132,26 +131,31 @@ class HadoopStdETL(IETL):
     def _stage_save_to_tmp(self, batchsize: int) -> None:
         """"""
         hdfs_tmp_path = self._get_table_path(self._tmp_path)
+        dt_now = pd.Timestamp.now()
+        dt_valid_to = pd.Timestamp.max
 
         batch: pd.DataFrame
         for i, batch in self._conn.iterbatches(batchsize=batchsize):
-            # 1.1. add edw-columns
-            batch["GUID"] = batch.apply(lambda _: str(uuid.uuid4()), axis=1)
-            batch["PK"] = batch[self._table.pk] \
-                .apply(lambda row: '_||_'.join(map(str, row)), axis=1)
-
-            batch["ROW_VALID_TO"] = pd.to_datetime(datetime(2100, 12, 31))
-
-            # 1.2 Save batch as BATCHX.parquet to tmp
+            # 1.0 variables
             filename = f"BATCH{i}.parquet"
             filepath = "/".join([hdfs_tmp_path, filename])
-            data_content = batch.to_parquet(index=False)
-            print(filepath)
+
+            # 1.1. add edw-columns
+            batch = self._transform_batch(
+                batch=batch,
+                dt_now=dt_now,
+                dt_valid_to=dt_valid_to,
+                filepath=filepath
+            )
+
+            # 1.2 Save batch as BATCHX.parquet to tmp
+            data_content = batch.to_parquet(index=False, compression="snappy")
             self._hdfs_client.write(
                 data=data_content,
                 hdfs_path=filepath,
                 overwrite=True
             )
+            print(filepath)
 
     def _stage_modify_update(self) -> None:
         """"""
@@ -174,6 +178,28 @@ class HadoopStdETL(IETL):
         # hive read table with LIMIT 2 OFFSET 2;
         raise NotImplementedError()
 
+    def _transform_batch(
+            self,
+            batch: pd.DataFrame,
+            dt_now: pd.Timestamp,
+            dt_valid_to: pd.Timestamp,
+            filepath: str
+    ) -> pd.DataFrame:
+        # batch.apply(lambda _: str(uuid.uuid4()), axis=1)
+        batch["GUID"] = [str(uuid.uuid4()) for _ in range(0, batch.shape[0])]
+        batch["PK"] = batch[self._table.pk] \
+            .apply(lambda row: '_||_'.join(map(str, row)), axis=1)
+
+        batch["ROW_VALID_FROM"] = dt_now
+        batch["ROW_VALID_FROM"] = batch["ROW_VALID_FROM"].dt.strftime("%Y-%m-%d %H:%M:%S")  # noqa
+        batch["ROW_VALID_TO"] = dt_valid_to
+        batch["ROW_VALID_TO"] = batch["ROW_VALID_TO"].dt.strftime("%Y-%m-%d %H:%M:%S")  # noqa
+
+        batch["ROW_IS_CURRENT"] = 1
+        batch["ROW_FILEPATH"] = filepath
+
+        return batch
+
     def _get_table_path(self, path: str) -> str:
         """"""
         tablepath = "/".join([
@@ -187,6 +213,7 @@ class HadoopStdETL(IETL):
 
     def _get_df_structure(self) -> pd.DataFrame:
         """"""
+        # TODO: seperate this to Connector -> IConnector get df structure
         df_structure = self._conn.batch(
             batchsize=10,
             skiprows=0
@@ -194,10 +221,14 @@ class HadoopStdETL(IETL):
 
         ordered_columns = ["GUID", "PK"] \
             + list(df_structure.columns) \
-            + ["ROW_VALID_TO"]
+            + ["ROW_IS_CURRENT", "ROW_VALID_FROM",
+               "ROW_VALID_TO", "ROW_FILEPATH"]
 
         df_structure["GUID"] = ""
         df_structure["PK"] = ""
+        df_structure["ROW_IS_CURRENT"] = 1
+        df_structure["ROW_VALID_FROM"] = pd.Timestamp.now()
         df_structure["ROW_VALID_TO"] = pd.Timestamp.now()
+        df_structure["ROW_FILEPATH"] = ""
 
         return df_structure[ordered_columns]

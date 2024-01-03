@@ -3,6 +3,7 @@
 import uuid
 import pandas as pd
 
+from io import BytesIO
 from typing import Any
 
 from hdfs import InsecureClient
@@ -50,6 +51,15 @@ class HDFileSystemClient:
     ) -> None:
         with self.client.write(hdfs_path, **write_kwargs) as hdfs_file:
             hdfs_file.write(data)
+
+    def read_parquet(self, hdfs_path: str) -> pd.DataFrame:
+        """"""
+        df: pd.DataFrame
+        with self.client.read(hdfs_path) as reader:
+            byte_data = BytesIO(reader.read())
+            df = pd.DataFrame(pd.read_parquet(byte_data))
+
+        return df
 
     def exists(self, path: str) -> bool:
         """"""
@@ -274,23 +284,24 @@ class HiveClient:
         Generates the CREATE EXTERNAL TABLE stmt for hive.
         """
         def get_hive_column_dtype(column: str, pd_dtype: str) -> str:
-            match pd_dtype:
+            match str(pd_dtype):
                 case "int64":
                     return f"`{column}` BIGINT"
                 case "float64":
                     return f"`{column}` DOUBLE"
                 case "bool":
                     return f"`{column}` BOOLEAN"
-                case "datetime64[ns]":
-                    return f"`{column}` TIMESTAMP"  # TODO: Test; Change to STRING and cast in VIEW  # noqa
-                case "<M8[ns]":
-                    return f"`{column}` TIMESTAMP"  # TODO: Test; Change to STRING and cast in VIEW  # noqa
+                # case "datetime64[us]":
+                #     return f"`{column}` TIMESTAMP"  # TODO: Test; Change to STRING and cast in VIEW  # noqa
+                # case "datetime64[ns]":
+                #     return f"`{column}` TIMESTAMP"  # TODO: Test; Change to STRING and cast in VIEW  # noqa
+                # case "<M8[ns]":
+                #     return f"`{column}` TIMESTAMP"  # TODO: Test; Change to STRING and cast in VIEW  # noqa
                 case _:
                     return f"`{column}` STRING"
         columns = [get_hive_column_dtype(column_name, dtype)
                    for column_name, dtype in df.dtypes.items()]
 
-        print(table)
         hive_create_external_stmt = (
             f"CREATE EXTERNAL TABLE IF NOT EXISTS {table.database}.{table.table_name} (\n"  # noqa
             f"    {', '.join(columns)}\n"
