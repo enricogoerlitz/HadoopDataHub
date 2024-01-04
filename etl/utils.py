@@ -2,8 +2,16 @@
 """
 import pandas as pd
 
-from typing import Any
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Any, Literal
+
+
+@dataclass(frozen=True)
+class Log:
+    time: datetime
+    level: Literal
+    message: str
 
 
 def current_dt_date() -> pd.Timestamp:

@@ -2,6 +2,8 @@
 import uuid
 import pandas as pd
 
+import utils
+
 from IPython.display import display
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -23,6 +25,18 @@ class IETL(ABC):
     @abstractmethod
     def run(self, *args, **kwargs) -> None:
         pass
+
+    @abstractmethod
+    def status(self) -> str:
+        pass
+
+    @abstractmethod
+    def logs(self) -> list[utils.Log]:
+        pass
+
+
+class AbstractEtl(IETL):
+    pass
 
 
 class HadoopStdETL(IETL):
@@ -146,6 +160,12 @@ class HadoopStdETL(IETL):
             filetype=eHdfsFileType.PARQUET,
             location=self._dist_tablepath_extended
         )
+
+    def status(self) -> str:
+        raise NotImplementedError()
+
+    def logs(self) -> list[utils.Log]:
+        raise NotImplementedError()
 
     def _stage_fullload_to_tmp(self) -> None:
         """"""
