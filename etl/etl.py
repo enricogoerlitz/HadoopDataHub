@@ -10,6 +10,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql import functions as f
 
 from etl.connectors import IConnector
+from etl.notify import INotificator
 from etl.clients import HDFileSystemClient, HiveClient
 from etl.datamodels import TableDataClass
 from etl.enums import eHdfsFileType
@@ -20,7 +21,7 @@ class IETL(ABC):
     """"""
 
     @abstractmethod
-    def start(self, *args, **kwargs) -> None:
+    def run(self, *args, **kwargs) -> None:
         pass
 
 
@@ -38,7 +39,8 @@ class HadoopStdETL(IETL):
             table: TableDataClass,
             change_columns: list[str],
             use_spark: bool,
-            historize: bool
+            historize: bool,
+            notificators: list[INotificator] = None
     ) -> None:
         """
         ...summary
@@ -71,6 +73,7 @@ class HadoopStdETL(IETL):
         self._bck_tablepath = self._get_table_path(self._bck_path)
         self._tmp_tablepath = self._get_table_path(self._tmp_path)
         self._historized = historize
+        self._notoficators = notificators
 
         if self._historized and not isinstance(self._table.pk, list):
             raise TypeError(
@@ -80,7 +83,13 @@ class HadoopStdETL(IETL):
             raise TypeError(
                 "The Table ist historized, so you need to enter change_columns as list")  # noqa
 
-    def start(
+        if (self._notoficators is not None and
+           not isinstance(self._notoficators, list)):
+            raise TypeError(
+                "The given notificators are no list!"
+            )
+
+    def run(
             self,
             batchsize: int = 10_000
     ) -> None:

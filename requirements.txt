@@ -12,3 +12,4 @@ pyhive==0.7.0
 thrift==0.16.0
 thrift-sasl==0.4.3
 pyspark==3.5.0
+flask==3.0.0
