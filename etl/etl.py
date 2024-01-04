@@ -40,6 +40,7 @@ class HadoopStdETL(IETL):
             change_columns: list[str],
             use_spark: bool,
             historize: bool,
+            batchsize: int = 10_000,
             notificators: list[INotificator] = None
     ) -> None:
         """
@@ -63,6 +64,7 @@ class HadoopStdETL(IETL):
         self._bck_path = bck_path
         self._table = table
         self._change_columns = change_columns
+        self._batchsize = batchsize
 
         tmp_tablename = f"tmp_{self._table.table_name}"
         self._tmp_table = self._table.copy(table_name=tmp_tablename)
@@ -89,17 +91,14 @@ class HadoopStdETL(IETL):
                 "The given notificators are no list!"
             )
 
-    def run(
-            self,
-            batchsize: int = 10_000
-    ) -> None:
+    def run(self) -> None:
         """"""
         is_psa_existing = self._hdfs_client.exists(path=self._dist_tablepath_extended)  # noqa
 
         df_structure = self._get_df_structure()
 
         # 1. Save data to tmp
-        self._stage_fullload_to_tmp(batchsize=batchsize)
+        self._stage_fullload_to_tmp()
 
         # 2. Create external table for tmp
         self._hive_client.create_external_table(
@@ -148,7 +147,7 @@ class HadoopStdETL(IETL):
             location=self._dist_tablepath_extended
         )
 
-    def _stage_fullload_to_tmp(self, batchsize: int) -> None:
+    def _stage_fullload_to_tmp(self) -> None:
         """"""
         print("START LOAD TO TMP")
         dt_valid_to = datetime(2100, 12, 31)
@@ -156,7 +155,7 @@ class HadoopStdETL(IETL):
         self._hdfs_client.client.delete(self._tmp_tablepath, recursive=True)
 
         batch: pd.DataFrame
-        for i, batch in self._conn.iterbatches(batchsize=batchsize):
+        for i, batch in self._conn.iterbatches(batchsize=self._batchsize):
             # 1.0 variables
             filename = f"BATCH_{i}.parquet"
             filepath_tmp = "/".join([self._tmp_tablepath, filename])
