@@ -302,8 +302,9 @@ class HiveClient:
         columns = [get_hive_column_dtype(column_name, dtype)
                    for column_name, dtype in df.dtypes.items()]
 
+        schema_str = f"{table.schema}_" if table.schema is not None else ""
         hive_create_external_stmt = (
-            f"CREATE EXTERNAL TABLE IF NOT EXISTS {table.database}.{table.table_name} (\n"  # noqa
+            f"CREATE EXTERNAL TABLE IF NOT EXISTS {table.database}.{schema_str}{table.table_name} (\n"  # noqa
             f"    {', '.join(columns)}\n"
             ")\n"
             f"{self._get_hive_stored_as(filetype, csv_delimiter)}"
