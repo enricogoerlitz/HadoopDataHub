@@ -2,7 +2,7 @@
 import uuid
 import pandas as pd
 
-import utils
+from etl import utils
 
 from IPython.display import display
 from abc import ABC, abstractmethod
@@ -24,14 +24,32 @@ class IETL(ABC):
 
     @abstractmethod
     def run(self, *args, **kwargs) -> None:
+        """"""
+        pass
+
+    @abstractmethod
+    def register(self, name: str) -> None:
+        """
+        Register this ETL Instance (params) in a DB for central access
+
+        1. Check is name existing
+        2. Save params with version number and timestamp
+        """
+        pass
+
+    @abstractmethod
+    def create(self, name: str) -> None:
+        """"""
         pass
 
     @abstractmethod
     def status(self) -> str:
+        """"""
         pass
 
     @abstractmethod
     def logs(self) -> list[utils.Log]:
+        """"""
         pass
 
 
@@ -160,6 +178,13 @@ class HadoopStdETL(IETL):
             filetype=eHdfsFileType.PARQUET,
             location=self._dist_tablepath_extended
         )
+
+    def register(self, name: str) -> None:
+        raise NotImplementedError()
+
+    @staticmethod
+    def create(name: str) -> None:
+        raise NotImplementedError()
 
     def status(self) -> str:
         raise NotImplementedError()
