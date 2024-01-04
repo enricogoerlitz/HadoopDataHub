@@ -4,6 +4,10 @@
 
 - Python < 3.12 & > 3.8 (recomended: 3.11.x)
 
+## Installation
+
+- conda create --name hdmh python=3.11
+
 
 ## Transformation Logic
 
