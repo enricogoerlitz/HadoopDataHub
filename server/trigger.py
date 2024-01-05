@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 from flask import Flask, request
 
-from etl.etl import IETL
+from etl.base import IETL
 
 
 @dataclass(frozen=True)
@@ -30,7 +30,7 @@ class HttpETLTrigger:
             etl.run()
 
 
-class FlaskServer:
+class TriggerServer:
     """Runs a Flask http service to trigger ETL-Processes"""
 
     def __init__(
@@ -64,7 +64,7 @@ class FlaskServer:
     def register(
             self,
             trigger: Union[list[HttpETLTrigger], HttpETLTrigger]
-    ) -> "FlaskServer":
+    ) -> "TriggerServer":
         self._validate_trigger(trigger=trigger)
         self._trigger += self._get_trigger_as_list(trigger)
         return self

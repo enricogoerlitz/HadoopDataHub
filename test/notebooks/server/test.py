@@ -10,7 +10,7 @@ from etl.clients import HiveClient, HDFileSystemClient  # noqa
 from etl.datamodels import HostDataClass, TableDataClass  # noqa
 from etl.connectors import CsvConnector  # noqa
 from etl.etl import HadoopStdETL  # noqa
-from etl.server import FlaskServer, HttpETLTrigger  # noqa
+from server import TriggerServer, HttpETLTrigger  # noqa
 
 hive_host = HostDataClass(host=connsettings.HIVE_HOST, port=connsettings.HIVE_PORT)  # noqa
 hdfs_host = HostDataClass(host=connsettings.HDFS_HOST, port=connsettings.HDFS_PORT)  # noqa
@@ -43,7 +43,7 @@ trigger = [
     HttpETLTrigger(name="datev-dbo-client", etls=[client_etl])
 ]
 
-server = FlaskServer(
+server = TriggerServer(
     name="Test-Server",
     host="localhost",
     port=3003,

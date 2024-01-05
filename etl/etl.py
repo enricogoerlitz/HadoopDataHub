@@ -11,66 +11,26 @@ handle column changes
             -> start process again
     - handle column adding
         > 1. this should be okay with the current logic
-
 """
 import uuid
 import pandas as pd
 
-import utils
-
 from IPython.display import display
-from abc import ABC, abstractmethod
 from datetime import datetime
 
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as f
 
+from etl.base.etl import AbstractEtl
 from etl.connectors import IConnector
 from etl.notify import INotificator
 from etl.clients import HDFileSystemClient, HiveClient
 from etl.datamodels import TableDataClass
 from etl.enums import eHdfsFileType
+from etl import utils
 
 
-class IETL(ABC):
-    """"""
-
-    @abstractmethod
-    def run(self, *args, **kwargs) -> None:
-        """"""
-        pass
-
-    @abstractmethod
-    def register(self, name: str) -> None:
-        """
-        Register this ETL Instance (params) in a DB for central access
-
-        1. Check is name existing
-        2. Save params with version number and timestamp
-        """
-        pass
-
-    @abstractmethod
-    def create(self, name: str) -> None:
-        """"""
-        pass
-
-    @abstractmethod
-    def status(self) -> str:
-        """"""
-        pass
-
-    @abstractmethod
-    def logs(self) -> list[utils.Log]:
-        """"""
-        pass
-
-
-class AbstractEtl(IETL):
-    pass
-
-
-class HadoopStdETL(IETL):
+class HadoopStdETL(AbstractEtl):
     """"""
 
     def __init__(
@@ -112,7 +72,8 @@ class HadoopStdETL(IETL):
         self._batchsize = batchsize
 
         tmp_tablename = f"tmp_{self._table.table_name}"
-        self._tmp_table = self._table.copy(table_name=tmp_tablename)
+        self._tmp_table: TableDataClass = self._table.copy(
+            table_name=tmp_tablename)
 
         self._dist_tablepath = self._get_table_path(self._dist_path)
         self._dist_tablepath_extended = "/".join([
@@ -191,9 +152,6 @@ class HadoopStdETL(IETL):
             filetype=eHdfsFileType.PARQUET,
             location=self._dist_tablepath_extended
         )
-
-    def register(self, name: str) -> None:
-        raise NotImplementedError()
 
     @staticmethod
     def create(name: str) -> None:

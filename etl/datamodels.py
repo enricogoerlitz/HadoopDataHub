@@ -1,23 +1,10 @@
 """"""
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
+
+from etl.base.datamodels import AbstractDataClass, copydataclass
 
 
-class AbstractDataClass:
-    def copy(self, **kwargs) -> 'TableDataClass':
-        valid_fields = {f.name for f in fields(self)}
-        invalid_keys = set(kwargs.keys()) - valid_fields
-        if invalid_keys:
-            raise ValueError(f"Invalid keys: {invalid_keys}")
-
-        updated_fields = {
-            f.name: kwargs.get(f.name, getattr(self, f.name))
-            for f in fields(self)
-        }
-
-        copied_instance = TableDataClass(**updated_fields)
-        return copied_instance
-
-
+@copydataclass
 @dataclass(frozen=True)
 class HostDataClass(AbstractDataClass):
     """"""
@@ -29,6 +16,7 @@ class HostDataClass(AbstractDataClass):
         return f"{self.host}:{self.port}"
 
 
+@copydataclass
 @dataclass(frozen=True)
 class TableDataClass(AbstractDataClass):
     """"""
