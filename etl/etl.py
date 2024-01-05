@@ -1,8 +1,22 @@
-""""""
+"""
+NEXT TODOS:
+
+handle column changes
+    - handle columnname has changed or column was removed:
+        > 1. get current structure
+        > 2. if structure has changed (a column is )
+            -> notify.email send email or Whatsapp or other notification
+        > 3. manually checking the structure and change it!
+            -> column renamed? -> rename column in HDFS
+            -> start process again
+    - handle column adding
+        > 1. this should be okay with the current logic
+
+"""
 import uuid
 import pandas as pd
 
-from etl import utils
+import utils
 
 from IPython.display import display
 from abc import ABC, abstractmethod
@@ -16,7 +30,6 @@ from etl.notify import INotificator
 from etl.clients import HDFileSystemClient, HiveClient
 from etl.datamodels import TableDataClass
 from etl.enums import eHdfsFileType
-from etl import utils
 
 
 class IETL(ABC):
