@@ -1,6 +1,16 @@
 """
 NEXT TODOS:
 
+VALID_FROM Meta-Managed-Hive-Table (ONLY FOR HISTORIZED TABLES!)
+    - create transactional HIVE Table (meta.stdhdpetl_pk) with the same name
+    - sprak.sql("SELECT * FROM meta.stdhdpetl_pk)
+        .filter(f.col("pk") not in new pks)
+    - Columns: hdfs_path, pk, row_valid_from
+
+implement params:
+    - valid from column
+    - valid to column
+
 handle column changes
     - handle columnname has changed or column was removed:
         > 1. get current structure
@@ -11,6 +21,24 @@ handle column changes
             -> start process again
     - handle column adding
         > 1. this should be okay with the current logic
+
+New ETLs:
+- CreateStdDimTable
+- CreateStdDimHist (crossjoin)
+- CreateStdFact -> get the guid of dims!
+
+
+- PSATable
+    - .pk
+    - .add_relation(PSATable, fk_columns)
+    - .create_std_dim(
+        select_columns={PSATable: [columns]},
+        rename={PSATable: "new_name"},
+        hist_dim: bool
+    )
+    - .create_std_fact()
+
+
 """
 import uuid
 import pandas as pd

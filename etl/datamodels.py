@@ -13,6 +13,7 @@ class HostDataClass(AbstractDataClass):
 
     @property
     def hostname(self) -> str:
+        """"""
         return f"{self.host}:{self.port}"
 
 
