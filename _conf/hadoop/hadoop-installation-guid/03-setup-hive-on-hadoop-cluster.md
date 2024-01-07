@@ -3,6 +3,9 @@
 0. Create Hadoop-Cluster
 
 1. ANDERS ALS HIER
+- https://hub.docker.com/r/apache/hive
+- https://hub.docker.com/r/apache/hive/tags
+- https://hive.apache.org/developement/quickstart/ ==> how to enter JDBC beeline
 - install HIVE VERSION mit Docker
 - dann kopiere tez und hive dirs from /opt/tez und /opt/hive
 - passe die Konfigurationen an

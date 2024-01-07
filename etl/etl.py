@@ -2,6 +2,8 @@
 NEXT TODOS:
 
 Copy UPDATE Files to tmp, DONT RENAME!!! (search: NEW LOGIC?)
+ - New Logic
+ - AND Only write in tmp! -> so no update in PSA!!!
 
 VALID_FROM Meta-Managed-Hive-Table (ONLY FOR HISTORIZED TABLES!)
     - create transactional HIVE Table (meta.stdhdpetl_pk)
@@ -259,6 +261,7 @@ class HadoopStdETL(AbstractEtl):
             print("TRANSFORMED DF:")
             display(df_transformed)
 
+            # TODO: DO NOT WRITE IN PSA !! ONLY WRITE TO TMP!!!
             if df_transformed is not None:
                 data_content_parquet = utils.df_to_parquet_content(df_transformed)  # noqa
 
@@ -387,6 +390,8 @@ class HadoopStdETL(AbstractEtl):
         Returns:
             dict: _description_
         """
+        # TODO: DO NOT WRITE IN PSA !! ONLY WRITE TO TMP!!!
+
         # No Update-Files existing
         if len(update_files_sorted_reverse) == 0:
             return {

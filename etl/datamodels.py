@@ -1,7 +1,7 @@
 """"""
 from dataclasses import dataclass
 
-from etl.base.datamodels import AbstractDataClass, copydataclass
+from etl.base import AbstractDataClass, copydataclass
 
 
 @copydataclass
