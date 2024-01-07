@@ -5,6 +5,12 @@ Copy UPDATE Files to tmp, DONT RENAME!!! (search: NEW LOGIC?)
  - New Logic
  - AND Only write in tmp! -> so no update in PSA!!!
 
+USE tez as hive execution engine!!!
+    - copy hive and tez foöders from docker-containers to local
+    - serve the conf files in the hive and tez folders
+    - copy current hive conf to BCK_{foldername}
+    - change current hive conf so that taz can be used!
+
 VALID_FROM Meta-Managed-Hive-Table (ONLY FOR HISTORIZED TABLES!)
     - create transactional HIVE Table (meta.stdhdpetl_pk)
     - sprak.sql("SELECT * FROM meta.stdhdpetl_pk)
