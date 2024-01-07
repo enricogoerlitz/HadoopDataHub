@@ -1,8 +1,10 @@
 """
 NEXT TODOS:
 
+Copy UPDATE Files to tmp, DONT RENAME!!! (search: NEW LOGIC?)
+
 VALID_FROM Meta-Managed-Hive-Table (ONLY FOR HISTORIZED TABLES!)
-    - create transactional HIVE Table (meta.stdhdpetl_pk) with the same name
+    - create transactional HIVE Table (meta.stdhdpetl_pk)
     - sprak.sql("SELECT * FROM meta.stdhdpetl_pk)
         .filter(f.col("pk") not in new pks)
     - Columns: hdfs_path, pk, row_valid_from
@@ -265,16 +267,27 @@ class HadoopStdETL(AbstractEtl):
                     **write_kwargs
                 )
 
+            # TODO: Read File and write it to tmp (NO RENAME!)
             for update_filename in update_files:
-                old_filepath = "/".join(
+                psa_filepath = "/".join(
                     [self._dist_tablepath_extended, update_filename])
-                new_filepath = "/".join(
+                tmp_filepath = "/".join(
                     [self._tmp_tablepath, update_filename])
 
-                self._hdfs_client.client.rename(
-                    hdfs_src_path=old_filepath,
-                    hdfs_dst_path=new_filepath
-                )
+                # NEW LOGIC?
+                # IF OKAY => self._hdfs_client.copy_file(...)
+                with self._hdfs_client.client.read(psa_filepath) as reader:
+                    byte_data = reader.read()
+                    self._hdfs_client.write(
+                        data=byte_data,
+                        hdfs_path=tmp_filepath,
+
+                    )
+
+                # self._hdfs_client.client.rename(
+                #     hdfs_src_path=psa_filepath,
+                #     hdfs_dst_path=tmp_filepath
+                # )
 
             spark.stop()
             spark = None

@@ -1,6 +1,28 @@
 # Setting up a HIVE Cluster on top of a Hadoop cluster
 
 0. Create Hadoop-Cluster
+
+1. ANDERS ALS HIER
+- install HIVE VERSION mit Docker
+- dann kopiere tez und hive dirs from /opt/tez und /opt/hive
+- passe die Konfigurationen an
+- starte hadoop und die beiden HIVE services (nicht im Container!)
+- ==> vielleicht kann man dann auch mehr mit HiveQL (joins etc) arbeiten, um dinge herauszufinden...
+
+0. 1. USE DOCKER => https://hub.docker.com/r/apache/hive
+- docker pull apache/hive:4.0.0-alpha-1
+- export HIVE_VERSION_DOCKER=4.0.0-alpha-1
+- docker run -d -p 10000:10000 -p 10002:10002 --env SERVICE_NAME=hiveserver2 --name hive4test2 apache/hive:${HIVE_VERSION_DOCKER}
+
+**Mount the mysql driver**
+docker run -d -p 9083:9083 --env SERVICE_NAME=metastore --env DB_DRIVER=mysql \
+ --env SERVICE_OPTS="-Djavax.jdo.option.ConnectionDriverName=com.mysql.jdbc.Driver -Djavax.jdo.option.ConnectionURL=jdbc:mysql://192.168.64.102:3306/metastore?createDatabaseIfNotExist=true -Djavax.jdo.option.ConnectionUserName=hadoop -Djavax.jdo.option.ConnectionPassword=hadoop_pw" \
+--mount type=bind,source=/home/enricogoerlitz/apache-hive-2.3.9-bin/lib/mysql-connector-j-8.1.0.jar,target=/opt/hive/lib/mysql-connector-j-8.1.0.jar \
+--name metastore-standalone apache/hive:${HIVE_VERSION_DOCKER}
+
+--mount source=warehouse,target=/opt/hive/data/warehouse \
+
+
 1. Start Hadoop (HADOOP_PATH/sbin/start-all-sh)
 2. Donwload
 - https://downloads.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
