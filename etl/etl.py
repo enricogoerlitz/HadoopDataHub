@@ -63,7 +63,7 @@ from etl.base.etl import AbstractEtl
 from etl.connectors import IConnector
 from etl.notify import INotificator
 from etl.clients import HDFileSystemClient, HiveClient
-from etl.datamodels import TableDataClass
+from etl.base.datamodels import TableDataClass
 from etl.enums import eHdfsFileType
 from etl import utils
 
@@ -499,3 +499,8 @@ class HadoopStdETL(AbstractEtl):
         df_structure["is_batch_file"] = 1
 
         return df_structure[ordered_columns]
+
+
+class HadoopMessageETL(AbstractEtl):
+    """Message Queue ETL"""
+    pass

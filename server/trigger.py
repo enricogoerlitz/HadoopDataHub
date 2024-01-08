@@ -53,6 +53,10 @@ class TriggerServer:
         self._app = Flask(__name__)
         self._running_threads: list[Thread] = []
 
+    @property
+    def app(self) -> Flask:
+        return self._app
+
     def run(self) -> None:
         """"""
         self._register_index_route()

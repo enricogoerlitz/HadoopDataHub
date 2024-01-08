@@ -1,7 +1,7 @@
 """"""
 from abc import ABC, abstractmethod
-from typing import Any, Type
-from dataclasses import fields
+from typing import Any, Type, Union
+from dataclasses import fields, dataclass
 
 
 class ICopyDataClass(ABC):
@@ -41,3 +41,43 @@ def copydataclass(cls: Type):
     setattr(cls, "copy", copy_method)
 
     return cls
+
+
+@copydataclass
+@dataclass(frozen=True)
+class HostDataClass(AbstractDataClass):
+    """"""
+    host: str
+    port: int
+
+    @property
+    def hostname(self) -> str:
+        """"""
+        return f"{self.host}:{self.port}"
+
+
+@copydataclass
+@dataclass(frozen=True)
+class TableDataClass(AbstractDataClass):
+    """"""
+    table_name: str
+    database: str
+    schema: str = None
+    pk: Union[str, list[str]] = None
+    pk_concat_str: str = None
+
+    def get_tablename(self) -> str:
+        """"""
+        if self.schema is None:
+            return f"{self.database}.{self.table_name}"
+        return f"{self.database}.{self.schema}.{self.table_name}"
+
+    def get_tablename_hive(self) -> str:
+        """"""
+        if self.schema is None:
+            return f"{self.database}.{self.table_name}"
+        return f"{self.database}.{self.schema}_{self.table_name}"
+
+    def get_pk(self) -> str:
+        """"""
+        return self.pk_concat_str.join(self.pk)

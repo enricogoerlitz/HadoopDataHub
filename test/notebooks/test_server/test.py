@@ -7,7 +7,7 @@ sys.path.append("../../")
 import connection as connsettings  # noqa
 
 from etl.clients import HiveClient, HDFileSystemClient  # noqa
-from etl.datamodels import HostDataClass, TableDataClass  # noqa
+from etl.base.datamodels import HostDataClass, TableDataClass  # noqa
 from etl.connectors import CsvConnector  # noqa
 from etl.etl import HadoopStdETL  # noqa
 from server import TriggerServer, HttpETLTrigger  # noqa
@@ -50,5 +50,11 @@ server = TriggerServer(
     threaded=True,
     debug=True
 ).register(trigger=trigger)
+
+
+@server.app.route("/api/new/route", methods=["GET"])
+def new_route() -> None:
+    return "/api/new/route successfully added"
+
 
 server.run()

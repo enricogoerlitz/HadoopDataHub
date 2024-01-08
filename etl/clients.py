@@ -11,7 +11,7 @@ from pyspark.sql import SparkSession
 from pyhive import hive
 
 from etl.enums import eHdfsFileType
-from etl.datamodels import HostDataClass, TableDataClass
+from etl.base.datamodels import HostDataClass, TableDataClass
 
 
 class HDFileSystemClient:

@@ -1,7 +1,7 @@
 """"""
 import pandas as pd
 
-from etl.datamodels import TableDataClass, HostDataClass
+from etl.base.datamodels import TableDataClass, HostDataClass
 from etl.clients import HiveClient
 
 

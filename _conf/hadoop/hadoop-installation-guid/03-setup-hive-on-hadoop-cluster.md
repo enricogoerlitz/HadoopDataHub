@@ -2,6 +2,11 @@
 
 0. Create Hadoop-Cluster
 
+0. HIVE with TEZ:
+https://cwiki.apache.org/confluence/display/Hive/Apache+Hive+4.0.0
+-> https://cwiki.apache.org/confluence/display/Hive/Manual+Installation#ManualInstallation-HiveMetastore
+
+
 1. ANDERS ALS HIER
 - https://hub.docker.com/r/apache/hive
 - https://hub.docker.com/r/apache/hive/tags
@@ -91,11 +96,12 @@ docker run -d -p 9083:9083 --env SERVICE_NAME=metastore --env DB_DRIVER=mysql \
 </configuration>
 
 execute:
-apache-hive-3.1.3/bin/schematool -dbType mysql -initSchema
+sudo apache-hive-3.1.3/bin/schematool -dbType mysql -initSchema
 
+(https://dlcdn.apache.org/tez/0.9.2/apache-tez-0.9.2-bin.tar.gz)
 
 7. Start HiveServer2 und metastore
-    - hive --service hiveserver2
+    - hive --service hiveserver2 (in HIVE 4 -> nur /path/bin/hiveserver2, not hive!)
         -> für Remote DB (DBeaver -> 192.168.64.102:10000)
     - hive --service metastore -p 9088
         - metastore für SPARK -> .config("hive.metastore.uris", "thrift://192.168.64.102:10000")
